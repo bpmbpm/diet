@@ -1,5 +1,7 @@
 ## ver1
-
+Повтор калькуляторов:
+- https://calcus.ru/calculator-imt
+- https://calculatorium.net/body/mifflin-st-jeor-equation
 ### run
 - https://bpmbpm.github.io/diet/ver1
 
