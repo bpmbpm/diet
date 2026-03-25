@@ -65,7 +65,7 @@ function рассчитать() {
     sohranitVUrl();
 
     // Отображаем результаты
-    pokazatResultaty(imt, kategoriya, kaloriiBase, kaloriiNorma);
+    pokazatResultaty(imt, kategoriya, kaloriiBase, kaloriiNorma, pol, vozrast);
 }
 
 // =====================================================
@@ -153,7 +153,7 @@ function poziciyaNaShkale(imt) {
 // =====================================================
 // Отображает результаты на странице
 // =====================================================
-function pokazatResultaty(imt, kategoriyaIndeks, kaloriiBase, kaloriiNorma) {
+function pokazatResultaty(imt, kategoriyaIndeks, kaloriiBase, kaloriiNorma, pol, vozrast) {
     var kategoriya = KATEGORII_IMT[kategoriyaIndeks];
 
     // Отображаем числовое значение ИМТ (округляем до 2 знаков)
@@ -182,6 +182,9 @@ function pokazatResultaty(imt, kategoriyaIndeks, kaloriiBase, kaloriiNorma) {
         '<strong>Совет:</strong> Для поддержания веса потребляйте ' + Math.round(kaloriiNorma) + ' ккал/сут.<br>' +
         'Для снижения веса: ~' + deficitKkal + ' ккал/сут (дефицит 20%).<br>' +
         'Для набора веса: ~' + proficitKkal + ' ккал/сут (профицит 20%).';
+
+    // Отображаем витамины и минералы
+    otobrazitVitaminyMineraly(pol, vozrast);
 
     // Показываем блок результатов
     document.getElementById('resultsCard').style.display = 'block';
@@ -290,8 +293,9 @@ document.addEventListener('click', function(event) {
 
 // Конфигурация файлов справки
 var FAJLY_SPRAVKI = {
-    'bmi':     { zagolovok: 'Калькулятор индекса массы тела', fajl: 'help/bmi.md' },
-    'mifflin': { zagolovok: 'Формула Миффлина-Сан Жеора для расчёта суточной нормы калорий', fajl: 'help/mifflin.md' }
+    'bmi':      { zagolovok: 'Калькулятор индекса массы тела', fajl: 'help/bmi.md' },
+    'mifflin':  { zagolovok: 'Формула Миффлина-Сан Жеора для расчёта суточной нормы калорий', fajl: 'help/mifflin.md' },
+    'algorithm': { zagolovok: 'Расчёт витаминов и минералов', fajl: 'help/algorithm.md' }
 };
 
 // Открывает модальное окно со справкой
@@ -401,3 +405,147 @@ function vosstanovitIzUrl() {
 // Восстанавливаем данные из URL сразу при загрузке скрипта
 // (скрипт подключён в конце body, поэтому DOM уже готов)
 vosstanovitIzUrl();
+
+// =====================================================
+// Расчёт витаминов и минералов
+// =====================================================
+
+var vitaminyDannyje = null;
+var mineralyDannyje = null;
+
+function zagruzitDannyje() {
+    Promise.all([
+        fetch('data/vitamins.json').then(function(r) { return r.json(); }),
+        fetch('data/minerals.json').then(function(r) { return r.json(); })
+    ]).then(function(dannye) {
+        vitaminyDannyje = dannye[0];
+        mineralyDannyje = dannye[1];
+    }).catch(function(oshibka) {
+        console.error('Ошибка загрузки данных о питательных веществах:', oshibka);
+    });
+}
+
+zagruzitDannyje();
+
+function opredelitGruppuVozrasta(vozrast) {
+    if (vozrast < 1) return '0-6 months';
+    if (vozrast < 4) return '1-3 years';
+    if (vozrast < 9) return '4-8 years';
+    if (vozrast < 14) return '9-13 years';
+    if (vozrast < 19) return '14-18 years';
+    if (vozrast < 31) return '19-30 years';
+    if (vozrast < 51) return '31-50 years';
+    if (vozrast < 71) return '51-70 years';
+    return '70+ years';
+}
+
+function najtiZnachenie(dannye, gruppa, pol) {
+    var gruppaKey = gruppa;
+
+    if (pol === 'f' && (gruppa === '14-18 years' || gruppa === '19-30 years' || gruppa === '31-50 years' || gruppa === '51-70 years' || gruppa === '70+ years')) {
+        if (gruppa === '14-18 years') gruppaKey = '14-18 years f';
+        else if (gruppa === '19-30 years') gruppaKey = '19-30 years f';
+        else if (gruppa === '31-50 years') gruppaKey = '31-50 years f';
+        else if (gruppa === '51-70 years') gruppaKey = '51-70 years f';
+        else if (gruppa === '70+ years') gruppaKey = '70+ years f';
+    }
+
+    for (var i = 0; i < dannye.groups.length; i++) {
+        if (dannye.groups[i].life_stage === gruppaKey) {
+            return dannye.groups[i];
+        }
+    }
+
+    return null;
+}
+
+function rasschitatVitaminyMineraly(pol, vozrast) {
+    var rezultat = {
+        vitaminy: [],
+        mineraly: []
+    };
+
+    if (!vitaminyDannyje || !mineralyDannyje) {
+        return rezultat;
+    }
+
+    var gruppa = opredelitGruppuVozrasta(vozrast);
+
+    for (var i = 0; i < vitaminyDannyje.vitamins.length; i++) {
+        var vitamin = vitaminyDannyje.vitamins[i];
+        var znachenie = najtiZnachenie(vitamin, gruppa, pol);
+
+        if (znachenie) {
+            var rda = znachenie.rda !== null ? znachenie.rda : znachenie.ai;
+            var ul = znachenie.ul;
+
+            rezultat.vitaminy.push({
+                nazvanie: vitamin.name,
+                rda: rda,
+                ul: ul,
+                edinica: vitamin.unit
+            });
+        }
+    }
+
+    for (var j = 0; j < mineralyDannyje.minerals.length; j++) {
+        var mineral = mineralyDannyje.minerals[j];
+        var znachenieMineral = najtiZnachenie(mineral, gruppa, pol);
+
+        if (znachenieMineral) {
+            var rdaMin = znachenieMineral.rda !== null ? znachenieMineral.rda : znachenieMineral.ai;
+            var ulMin = znachenieMineral.ul;
+
+            rezultat.mineraly.push({
+                nazvanie: mineral.name,
+                rda: rdaMin,
+                ul: ulMin,
+                edinica: mineral.unit
+            });
+        }
+    }
+
+    return rezultat;
+}
+
+function otobrazitVitaminyMineraly(pol, vozrast) {
+    var rezultat = rasschitatVitaminyMineraly(pol, vozrast);
+
+    var vitaminsBody = document.getElementById('vitaminsTableBody');
+    var mineralsBody = document.getElementById('mineralsTableBody');
+
+    if (!vitaminsBody || !mineralsBody) {
+        return;
+    }
+
+    vitaminsBody.innerHTML = '';
+    mineralsBody.innerHTML = '';
+
+    for (var i = 0; i < rezultat.vitaminy.length; i++) {
+        var v = rezultat.vitaminy[i];
+        var row = document.createElement('tr');
+
+        var rdaText = v.rda !== null ? v.rda + ' ' + v.edinica : '—';
+        var ulText = v.ul !== null ? v.ul + ' ' + v.edinica : '—';
+
+        row.innerHTML =
+            '<td class="nutrient-name">' + v.nazvanie + '</td>' +
+            '<td class="nutrient-rda">' + rdaText + '</td>' +
+            '<td class="nutrient-ul">' + ulText + '</td>';
+        vitaminsBody.appendChild(row);
+    }
+
+    for (var j = 0; j < rezultat.mineraly.length; j++) {
+        var m = rezultat.mineraly[j];
+        var rowM = document.createElement('tr');
+
+        var rdaTextM = m.rda !== null ? m.rda + ' ' + m.edinica : '—';
+        var ulTextM = m.ul !== null ? m.ul + ' ' + m.edinica : '—';
+
+        rowM.innerHTML =
+            '<td class="nutrient-name">' + m.nazvanie + '</td>' +
+            '<td class="nutrient-rda">' + rdaTextM + '</td>' +
+            '<td class="nutrient-ul">' + ulTextM + '</td>';
+        mineralsBody.appendChild(rowM);
+    }
+}
