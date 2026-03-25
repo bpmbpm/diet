@@ -34,6 +34,9 @@
             <button class="help-menu-item" onclick="открытьСправку('mifflin')">
                 📖 Формула Миффлина-Сан Жеора для расчёта суточной нормы калорий
             </button>
+            <button class="help-menu-item" onclick="открытьСправку('algorithm')">
+                📖 Расчёт витаминов и минералов
+            </button>
         </div>
     </div>
 
@@ -163,6 +166,51 @@
                 </div>
                 <!-- Рекомендации -->
                 <div class="calories-tips" id="caloriesTips"></div>
+            </div>
+        </div>
+
+        <!-- Разделитель -->
+        <hr class="result-divider">
+
+        <!-- Результат по витаминам и минералам -->
+        <div class="result-section">
+            <h2 class="result-title">Сколько витаминов, минералов нужно вам?</h2>
+
+            <div class="calories-results">
+                <p class="calories-tips">
+                    Ниже приведены рекомендуемые суточные нормы потребления (RDA) и верхние допустимые уровни (UL) на основе вашего возраста и пола.
+                    Данные взяты из <a href="https://www.ncbi.nlm.nih.gov/books/NBK56056/" target="_blank" rel="noopener">USDA Dietary Reference Intakes</a>.
+                </p>
+
+                <div class="nutrients-section">
+                    <h3 class="nutrients-subtitle">Витамины</h3>
+                    <table class="nutrients-table" id="vitaminsTable">
+                        <thead>
+                            <tr>
+                                <th>Витамин</th>
+                                <th>Норма (RDA/AI)</th>
+                                <th>Верхний предел (UL)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="vitaminsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="nutrients-section">
+                    <h3 class="nutrients-subtitle">Минералы</h3>
+                    <table class="nutrients-table" id="mineralsTable">
+                        <thead>
+                            <tr>
+                                <th>Минерал</th>
+                                <th>Норма (RDA/AI)</th>
+                                <th>Верхний предел (UL)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="mineralsTableBody">
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 

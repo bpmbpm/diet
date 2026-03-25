@@ -616,6 +616,68 @@ body {
 }
 
 /* =========================================
+   Таблицы витаминов и минералов
+   ========================================= */
+.nutrients-section {
+    margin-top: 16px;
+}
+
+.nutrients-subtitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.nutrients-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.nutrients-table th {
+    background-color: #e8f4fd;
+    padding: 10px 12px;
+    text-align: left;
+    border: 1px solid #cce0f5;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.nutrients-table td {
+    padding: 8px 12px;
+    border: 1px solid #e5e7eb;
+    color: #444;
+}
+
+.nutrients-table tr:nth-child(even) td {
+    background-color: #f8fafc;
+}
+
+.nutrients-table .nutrient-name {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.nutrients-table .nutrient-rda {
+    color: #15803d;
+    font-weight: 600;
+}
+
+.nutrients-table .nutrient-ul {
+    color: #b91c1c;
+    font-weight: 500;
+}
+
+.nutrients-table .nutrient-na {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* =========================================
    Подвал
    ========================================= */
 .page-footer {
