@@ -1,6 +1,8 @@
 # Трекер питания ver3cm
 
 Браузерное приложение для учёта калорий, КБЖУ, витаминов и минералов. Создано по образцу [cronometer.com](https://cronometer.com).
+### run
+- https://bpmbpm.github.io/diet/ver3cm
 
 ## Возможности
 
